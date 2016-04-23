@@ -4,6 +4,13 @@
 
 int debug=0;
 
+/*typedef struct QuadtreeNode{
+	unsigned char blue, green, red, reserved;
+	uint32_t area;
+	int32_t top_left, top_right;
+	int32_t bottom_right, bottom_left;
+} __attribute__((packed)) QuadtreeNode;*/
+
 typedef struct QuadtreeNode{
 	unsigned char blue, green, red, reserved;
 	uint32_t area;
@@ -153,15 +160,20 @@ arbore *ceva(pixel ***a, int l, int r, int u, int d)
 	arbore *root=malloc(sizeof(arbore));
 	//root->nod=NULL;
 	root->nod=malloc(sizeof(QuadtreeNode));
+	root->nod->blue=0;
+	root->nod->green=0;
+	root->nod->red=0;
+	root->nod->reserved=0;
 	root->left1=NULL;
 	root->left2=NULL;
 	root->right1=NULL;
 	root->right2=NULL;
+	root->nod->area=(r-l+1)*(r-l+1);
 	printf("Pasul: %d\n",debug++);
-	if(l>r || u>d || isUniform(a,l,r,u,d))
+	if(isUniform(a,l,r,u,d))
 	{
 		printf("hey\n");
-		root->nod=malloc(sizeof(QuadtreeNode));
+		//root->nod=malloc(sizeof(QuadtreeNode));
 		root->nod->blue=a[l][l]->blue;
 		root->nod->green=a[l][l]->green;
 		root->nod->red=a[l][l]->red;
@@ -170,6 +182,10 @@ arbore *ceva(pixel ***a, int l, int r, int u, int d)
 		root->left2=NULL;
 		root->right1=NULL;
 		root->right2=NULL;
+		root->nod->bottom_left=-1;
+		root->nod->bottom_right=-1;
+		root->nod->top_left=-1;
+		root->nod->top_right=-1;
 		return root;
 	}
 	else
@@ -317,21 +333,24 @@ void freeArbore(arbore **root)
 	while(head)
 	{
 		aux=pop(&head);
-		if(aux->left1!=NULL)
-	        insertL(&head, aux->left1);
-		if(aux->left2!=NULL)
-	        insertL(&head, aux->left2);
-	        if(aux->right1!=NULL)
-	        insertL(&head, aux->right1);
-		if(aux->right2!=NULL)
-	        insertL(&head, aux->right2);
-		/*if(aux->nod!=NULL)
+		if(aux!=NULL)
 		{
-			free(aux->nod);
-			aux->nod=NULL;
-		}*/
-		free(aux);
-		aux=NULL;
+			if(aux->left1!=NULL)
+		        insertL(&head, aux->left1);
+			if(aux->left2!=NULL)
+		        insertL(&head, aux->left2);
+		        if(aux->right1!=NULL)
+		        insertL(&head, aux->right1);
+			if(aux->right2!=NULL)
+		        insertL(&head, aux->right2);
+			/*if(aux->nod!=NULL)
+			{
+				free(aux->nod);
+				aux->nod=NULL;
+			}*/
+			free(aux);
+			aux=NULL;
+		}
 	}
 	*root=NULL;
 	freeL(&head);
@@ -382,7 +401,17 @@ QuadtreeNode **indexing(arbore **v, uint32_t numar_noduri)
 	QuadtreeNode **vector=malloc(numar_noduri*sizeof(QuadtreeNode*));
 	for(i=0;i<numar_noduri;i++)
 	{
-		vector[i]=v[i]->nod;
+		vector[i]=malloc(sizeof(QuadtreeNode));
+		vector[i]->blue=v[i]->nod->blue;
+		vector[i]->green=v[i]->nod->green;
+		vector[i]->red=v[i]->nod->red;
+		vector[i]->reserved=v[i]->nod->reserved;
+		vector[i]->area=v[i]->nod->area;
+		vector[i]->top_left=v[i]->nod->top_left;
+		vector[i]->top_right=v[i]->nod->top_right;
+		vector[i]->bottom_right=v[i]->nod->bottom_right;
+		vector[i]->bottom_left=v[i]->nod->bottom_left;
+		free(v[i]->nod);
 		free(v[i]);
 	}
 	free(v);
@@ -472,14 +501,23 @@ int main(int argc, char *argv[])
 	uint32_t k;
 	for(k=0;k<numar_noduri;k++)
 	{
-		fwrite(vector[k], sizeof(QuadtreeNode), 1, out);
+		//fwrite(vector[k], sizeof(QuadtreeNode), 1, out);
+		fwrite(&(vector[k]->blue), sizeof(unsigned char), 1, out);
+		fwrite(&(vector[k]->green), sizeof(unsigned char), 1, out);
+		fwrite(&(vector[k]->red), sizeof(unsigned char), 1, out);
+		fwrite(&(vector[k]->reserved), sizeof(unsigned char), 1, out);
+		fwrite(&(vector[k]->area), sizeof(uint32_t), 1, out);
+		fwrite(&(vector[k]->bottom_left), sizeof(int32_t), 1, out);
+		fwrite(&(vector[k]->top_left), sizeof(int32_t), 1, out);
+		fwrite(&(vector[k]->top_right), sizeof(int32_t), 1, out);
+		fwrite(&(vector[k]->bottom_right), sizeof(int32_t), 1, out);
 		free(vector[k]);
 	}
 
 	free(vector);
 	freeL(&lista);
-	//debug=0;
-	//freeArbore(&head);
+	debug=0;
+	freeArbore(&head);
 	for(i=info_header->height-1;i>=0;i--)
 	{
 		for(j=0;j<info_header->width;j++)
@@ -490,5 +528,7 @@ int main(int argc, char *argv[])
 	}
 	free(a);
 	fclose(out);
+	free(file_header);
+	free(info_header);
 	return 0;
 }
