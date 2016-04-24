@@ -19,12 +19,12 @@ typedef struct QuadtreeNode{
 	int32_t bottom_left, bottom_right;
 } __attribute__((packed)) QuadtreeNode;*/
 
-typedef struct QuadtreeNode2{
+/*typedef struct QuadtreeNode2{
 	unsigned char *blue, *green, *red, *reserved;
 	uint32_t *area;
 	int32_t *top_left, *top_right;
 	int32_t *bottom_left, *bottom_right;
-} __attribute__((packed)) QuadtreeNode2;
+} __attribute__((packed)) QuadtreeNode2;*/
 
 
 typedef struct FileHeader{
@@ -53,7 +53,7 @@ typedef struct list{
 	struct list *next;
 } list;
 
-int isUniform(pixel ***a, int l, int r, int u, int d)
+int isUniform(pixel **a, int l, int r, int u, int d)
 {
 	int i,j;
 	pixel *aux,*aux2;
@@ -63,17 +63,17 @@ int isUniform(pixel ***a, int l, int r, int u, int d)
 		for(j=l;j<r;j++)
 		{
 			if(i==u && j==l)
-				aux=a[i][j];
+				aux=&a[i][j];
 			else
 			{
-				aux2=a[i][j];
+				aux2=&a[i][j];
 				if(!(aux->blue==aux2->blue && aux->green==aux2->green && aux->red==aux2->red && aux->reserved==aux2->reserved))
 				{
 					//printf("Not Uniform\n");
 					return 0;
 				}
 			}
-			aux=a[i][j];
+			aux=&a[i][j];
 		}
 	}
 	//printf("Uniform\n");
@@ -156,7 +156,7 @@ void init(arbore **head)
 	return new;
 }*/
 
-arbore *ceva(pixel ***a, int l, int r, int u, int d)
+/*arbore *ceva(pixel **a, int l, int r, int u, int d)
 {
 	arbore *root=malloc(sizeof(arbore));
 	//root->nod=NULL;
@@ -208,7 +208,7 @@ arbore *ceva(pixel ***a, int l, int r, int u, int d)
 		//printf("right2 assigned\n");
 		return root;
 	}
-}
+}*/
 
 uint32_t countFrunze(arbore *head)
 {
@@ -440,6 +440,60 @@ QuadtreeNode *indexing(arbore **v, uint32_t numar_noduri)
 	return vector;
 }
 
+arbore *ceva(pixel **a, int l, int r, int u, int d)
+{
+	arbore *new=malloc(sizeof(arbore));
+	new->left1=NULL;
+	new->left2=NULL;
+	new->right1=NULL;
+	new->right2=NULL;
+	new->nod=malloc(sizeof(QuadtreeNode));
+	new->nod->blue=0;
+	new->nod->green=0;
+	new->nod->red=0;
+	new->nod->reserved=0;
+	new->nod->area=(r-l)*(r-l);
+	new->nod->bottom_left=-1;
+	new->nod->bottom_right=-1;
+	new->nod->top_left=-1;
+	new->nod->top_right=-1;
+	//printf("Pasul: %d\n",debug++);
+	if(isUniform(a,l,r,u,d))
+	{
+		//printf("hey\n");
+		//new->nod=malloc(sizeof(QuadtreeNode));
+		//printf("terminal node\n");
+		new->nod->blue=a[u][l].blue;
+		new->nod->green=a[u][l].green;
+		new->nod->red=a[u][l].red;
+		new->nod->reserved=a[u][l].reserved;
+		new->left1=NULL;
+		new->left2=NULL;
+		new->right1=NULL;
+		new->right2=NULL;
+		new->nod->bottom_left=-1;
+		new->nod->bottom_right=-1;
+		new->nod->top_left=-1;
+		new->nod->top_right=-1;
+		return new;
+	}
+	else
+	{
+		new->left1=ceva(a,l,(l+r)/2,u,(u+d)/2);
+		//printf("left1 assigned\n");
+		//new->left2=ceva(a,(l+r)/2+1,r,u,(u+d)/2);
+		new->left2=ceva(a,(l+r)/2,r,u,(u+d)/2);
+		//printf("left2 assigned\n");
+		//new->right1=ceva(a,(l+r)/2+1,r,(u+d)/2+1,d);
+		new->right1=ceva(a,(l+r)/2,r,(u+d)/2,d);
+		//printf("right1 assigned\n");
+		//new->right2=ceva(a,l,(l+r)/2,(u+d)/2+1,d);
+		new->right2=ceva(a,l,(l+r)/2,(u+d)/2,d);
+		//printf("right2 assigned\n");
+		return new;
+	}
+}
+
 arbore *task2(QuadtreeNode *v, int32_t k)
 {
 	arbore *new=malloc(sizeof(arbore));
@@ -556,17 +610,13 @@ int main(int argc, char *argv[])
 		//----------------Citire Matrice----------------------------------------
 		//printf("Citire Headere PASSED\n");
 		int i,j;
-		pixel ***a=malloc(info_header->height*sizeof(pixel**));
+		pixel **a=malloc((info_header->height)*sizeof(pixel*));
 		for(i=info_header->height-1;i>=0;i--)
 		{
-			a[i]=malloc(info_header->width*sizeof(pixel*));
+			a[i]=malloc((info_header->width)*sizeof(pixel));
 			for(j=0;j<info_header->width;j++)
 			{
-				a[i][j]=malloc(sizeof(pixel));
-				fread(&a[i][j]->blue, sizeof(unsigned char), 1, file);
-				fread(&a[i][j]->green, sizeof(unsigned char), 1, file);
-				fread(&a[i][j]->red, sizeof(unsigned char), 1, file);
-				fread(&a[i][j]->reserved, sizeof(unsigned char), 1, file);
+				fread(&a[i][j], sizeof(pixel), 1, file);
 			}
 		}
 		//printf("Citire Matrice PASSED\n");
@@ -576,10 +626,14 @@ int main(int argc, char *argv[])
 		arbore *head;
 		//printf("W:%d H:%d\n",info_header->width,info_header->height);
 		//printf("Beggining \"ceva\"\n");
-		head=ceva(a,0,info_header->width,0,info_header->height);
+		head=ceva(a, 0, info_header->width, 0, info_header->height);
+		//head=makeTree(a, 0, info_header->width, 0, info_header->height);
 		//printf("Ending \"ceva\"\n");
 		numar_culori=countFrunze(head);
 		numar_noduri=countNoduri(head);
+
+
+//************************************TESTING***********************************
 
 		//printf("Numar_culori=%d, Numar_noduri=%d\n",numar_culori,numar_noduri);
 
@@ -607,13 +661,11 @@ int main(int argc, char *argv[])
 		//printf("PAss\n");
 		for(i=info_header->height-1;i>=0;i--)
 		{
-			for(j=0;j<info_header->width;j++)
-			{
-				free(a[i][j]);
-			}
 			free(a[i]);
 		}
 		free(a);
+//********************END TESTING***********************************************
+
 	}
 	if(strcmp(argv[1],"-d")==0)
 	{
