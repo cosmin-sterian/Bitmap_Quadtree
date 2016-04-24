@@ -3,29 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-//int debug=0;
-
 typedef struct QuadtreeNode{
 	unsigned char blue, green, red, reserved;
 	uint32_t area;
 	int32_t bottom_left, top_left;
 	int32_t bottom_right, top_right;
 } __attribute__((packed)) QuadtreeNode;
-
-/*typedef struct QuadtreeNode{
-	unsigned char blue, green, red, reserved;
-	uint32_t area;
-	int32_t top_left, top_right;
-	int32_t bottom_left, bottom_right;
-} __attribute__((packed)) QuadtreeNode;*/
-
-/*typedef struct QuadtreeNode2{
-	unsigned char *blue, *green, *red, *reserved;
-	uint32_t *area;
-	int32_t *top_left, *top_right;
-	int32_t *bottom_left, *bottom_right;
-} __attribute__((packed)) QuadtreeNode2;*/
-
 
 typedef struct FileHeader{
 	short signature;
@@ -57,7 +40,6 @@ int isUniform(pixel **a, int l, int r, int u, int d)
 {
 	int i,j;
 	pixel *aux,*aux2;
-	//printf("yolo in, L=%d, R=%d, U=%d, D=%d\n",l,r,u,d);
 	for(i=u;i<d;i++)
 	{
 		for(j=l;j<r;j++)
@@ -69,14 +51,12 @@ int isUniform(pixel **a, int l, int r, int u, int d)
 				aux2=&a[i][j];
 				if(!(aux->blue==aux2->blue && aux->green==aux2->green && aux->red==aux2->red && aux->reserved==aux2->reserved))
 				{
-					//printf("Not Uniform\n");
 					return 0;
 				}
 			}
 			aux=&a[i][j];
 		}
 	}
-	//printf("Uniform\n");
 	return 1;
 }
 
@@ -84,131 +64,6 @@ void init(arbore **head)
 {
 	*head=NULL;
 }
-
-/*void insert(arbore **head, QuadtreeNode *val)
-{
-	arbore *new=malloc(sizeof(arbore));
-	new->nod=val;
-	new->left1=NULL;
-	new->left2=NULL;
-	new->right1=NULL;
-	new->right2=NULL;
-	if(*head==NULL)
-	{
-		*head=new;
-	}
-	else
-	{
-		arbore *aux=*head;
-		arbore *prev=aux;
-		while(aux!=NULL)
-		{
-			prev=aux;
-			if(aux->left1==NULL)
-				aux=aux->left1;
-			else
-			{
-				if(aux->left2==NULL)
-					aux=aux->left2;
-				else
-				{
-					if(aux->right1==NULL)
-						aux=aux->right1;
-					else
-					{
-						if(aux->right2==NULL)
-							aux=aux->right2;
-					}
-				}
-			}
-		}
-	}
-}*/
-
-/*arbore *ceva(pixel ***a, int l, int r, int u, int d)
-{
-	arbore *new=malloc(sizeof(arbore));
-	//printf("*********PASSED**********\n");
-	new->nod=malloc(sizeof(QuadtreeNode));
-	//printf("*********PASSED**********\n");
-	new->left1=NULL;
-	new->left2=NULL;
-	new->right1=NULL;
-	new->right2=NULL;
-	//printf("*********PASSED**********\n");
-	printf("Left=%d, Right=%d, Up=%d, Down=%d\n",l,r,u,d);
-	new->nod->area=(r-l+1)*(r-l+1);
-	if((l==r && r==u && u==d) || isUniform(a,l,r,u,d))
-	{
-		//new->nod=malloc(sizeof(QuadtreeNode));
-		new->nod->blue=a[u][u]->blue;
-		new->nod->green=a[u][u]->green;
-		new->nod->red=a[u][u]->red;
-		new->nod->reserved=a[u][u]->reserved;
-	}
-	else
-	{
-		new->left1=ceva(a,l,r/2,u,d/2);
-		new->left2=ceva(a,l/2+1,r,u,d/2);
-		new->right1=ceva(a,l/2+1,r,u/2+1,d);
-		new->right2=ceva(a,l,r/2,u/2+1,d);
-	}
-	return new;
-}*/
-
-/*arbore *ceva(pixel **a, int l, int r, int u, int d)
-{
-	arbore *root=malloc(sizeof(arbore));
-	//root->nod=NULL;
-	root->nod=malloc(sizeof(QuadtreeNode));
-	root->nod->blue=0;
-	root->nod->green=0;
-	root->nod->red=0;
-	root->nod->reserved=0;
-	root->left1=NULL;
-	root->left2=NULL;
-	root->right1=NULL;
-	root->right2=NULL;
-	root->nod->area=(r-l+1)*(r-l+1);
-	root->nod->bottom_left=-1;
-	root->nod->bottom_right=-1;
-	root->nod->top_left=-1;
-	root->nod->top_right=-1;
-	//printf("Pasul: %d\n",debug++);
-	if(isUniform(a,l,r,u,d))
-	{
-		//printf("hey\n");
-		//root->nod=malloc(sizeof(QuadtreeNode));
-		root->nod->blue=a[l][l]->blue;
-		root->nod->green=a[l][l]->green;
-		root->nod->red=a[l][l]->red;
-		root->nod->reserved=a[l][l]->reserved;
-		root->left1=NULL;
-		root->left2=NULL;
-		root->right1=NULL;
-		root->right2=NULL;
-		root->nod->bottom_left=-1;
-		root->nod->bottom_right=-1;
-		root->nod->top_left=-1;
-		root->nod->top_right=-1;
-		return root;
-	}
-	else
-	{
-		root->left1=ceva(a,l,(l+r)/2,u,(u+d)/2);
-		//printf("left1 assigned\n");
-		//root->left2=ceva(a,(l+r)/2+1,r,u,(u+d)/2);
-		root->left2=ceva(a,(l+r)/2,r,u,(u+d)/2);
-		//printf("left2 assigned\n");
-		//root->right1=ceva(a,(l+r)/2+1,r,(u+d)/2+1,d);
-		root->right1=ceva(a,(l+r)/2,r,(u+d)/2,d);
-		//printf("right1 assigned\n");
-		//root->right2=ceva(a,l,(l+r)/2,(u+d)/2+1,d);
-		root->right2=ceva(a,l,(l+r)/2,(u+d)/2,d);
-		//printf("right2 assigned\n");
-		return root;
-	}
-}*/
 
 uint32_t countFrunze(arbore *head)
 {
@@ -278,60 +133,6 @@ arbore *pop(list **head)
 		return NULL;
 }
 
-/*void freeArbore(arbore *root)
-{
-
-	printf("Pas: %d\n",debug++);
-	arbore *aux;
-	list *lista;
-	initL(&lista);
-	insertL(&lista,root);
-	while(lista)
-	{
-		printf("Pas: %d\n",debug++);
-		aux=pop(&lista);
-		if(aux->left1!=NULL)
-			insertL(&lista,aux->left1);
-		if(aux->left2!=NULL)
-			insertL(&lista,aux->left2);
-		if(aux->right1!=NULL)
-			insertL(&lista,aux->right1);
-		if(aux->right2!=NULL)
-			insertL(&lista,aux->right2);
-		printf("1\n");
-		free(aux->nod);
-		printf("2\n");
-		//free(aux);
-		//printf("3\n");
-	}
-	freeL(&lista);
-}*/
-
-/*void freeArbore(arbore *root)
-{
-	if(root==NULL)
-		return;
-	else
-	{
-		if(root->left1!=NULL)
-			freeArbore(root->left1);
-		if(root->left2!=NULL)
-			freeArbore(root->left2);
-		if(root->right1!=NULL)
-			freeArbore(root->right1);
-		if(root->right2!=NULL)
-			freeArbore(root->right2);
-		if(root->nod!=NULL)
-		{
-			free(root->nod);
-			root->nod=NULL;
-		}
-		free(root);
-		root=NULL;
-		return;
-	}
-}*/
-
 void freeArbore(arbore **root)
 {
 	arbore *aux;
@@ -351,11 +152,6 @@ void freeArbore(arbore **root)
 		        insertL(&head, aux->right1);
 			if(aux->right2!=NULL)
 		        insertL(&head, aux->right2);
-			/*if(aux->nod!=NULL)
-			{
-				free(aux->nod);
-				aux->nod=NULL;
-			}*/
 			free(aux);
 			aux=NULL;
 		}
@@ -368,109 +164,28 @@ arbore **bfs(arbore *root, list *head, uint32_t numar_noduri)
 {
 	arbore *aux;
 	arbore **v=malloc(numar_noduri*sizeof(arbore*));
-	int i=0,k=1;
+	int i=0;
 	insertL(&head,root);
-	list *last=head;
-	list *new;
 	while(head)
 	{
 		aux=pop(&head);
-		k--;
-		//printf("%d ",aux2->val);
-		//v[i].nod=malloc(sizeof(QuadtreeNode));
 		v[i++]=aux;
-		if(v[i-1]->left1!=NULL)
-		{
-			v[i-1]->nod->top_left=i-1+k+1;
-			v[i-1]->nod->top_right=i-1+k+2;
-			v[i-1]->nod->bottom_right=i-1+k+3;
-			v[i-1]->nod->bottom_left=i-1+k+4;
-		}
 	        if(aux->left1!=NULL)
-	        {
-			//insertL(&head, aux->left1);
-			new=malloc(sizeof(list));
-			new->next=NULL;
-			new->val=aux->left1;
-			if(head==NULL)
-			{
-				head=new;
-			}
-			else
-				last->next=new;
-			last=new;
-			k++;
-		}
+	        insertL(&head, aux->left1);
 		if(aux->left2!=NULL)
-	        {
-			//insertL(&head, aux->left2);
-			new=malloc(sizeof(list));
-			new->next=NULL;
-			new->val=aux->left2;
-			if(head==NULL)
-			{
-				head=new;
-			}
-			else
-				last->next=new;
-			last=new;
-			k++;
-		}
+	        insertL(&head, aux->left2);
 	        if(aux->right1!=NULL)
-	        {
-			//insertL(&head, aux->right1);
-			new=malloc(sizeof(list));
-			new->next=NULL;
-			new->val=aux->right1;
-			if(head==NULL)
-			{
-				head=new;
-			}
-			else
-				last->next=new;
-			last=new;
-			k++;
-		}
+	        insertL(&head, aux->right1);
 		if(aux->right2!=NULL)
-	        {
-			//insertL(&head, aux->right2);
-			new=malloc(sizeof(list));
-			new->next=NULL;
-			new->val=aux->right2;
-			if(head==NULL)
-			{
-				head=new;
-			}
-			else
-				last->next=new;
-			last=new;
-			k++;
-		}
-
-	        //free(aux2);
-		//free(aux);
-	        //aux=NULL;
+	        insertL(&head, aux->right2);
 	}
 	freeL(&head);
-	new=NULL;
-	last=NULL;
 	return v;
 }
 
-/*int cmpArbore(arbore a, arbore b)
+QuadtreeNode *indexing(arbore **v, uint32_t numar_noduri)
 {
-	if(a.nod->blue == b.nod->blue && a.nod->green == b.nod->green && a.nod->red == b.nod->red && a.nod->reserved == b.nod->reserved
-		&& a.nod->area == b.nod->area && a.nod->top_left == b.nod->top_left && a.nod->top_right == b.nod->top_right
-		&& a.nod->bottom_right == b.nod->bottom_right && a.nod->bottom_left == b.nod->bottom_left && a.left1 == b.left1
-		&& a.left2 == b.left2 && a.right1 == b.right1 && a.right2 == b.right2)
-		return 1;
-	else
-		return 0;
-}*/
-
-/*QuadtreeNode *indexing(arbore **v, uint32_t numar_noduri)
-{
-	uint32_t i;
+	uint32_t i,j;
 	for(i=0;i<numar_noduri-1;i++)
 	{
 		for(j=i+1;j<numar_noduri;j++)
@@ -484,7 +199,6 @@ arbore **bfs(arbore *root, list *head, uint32_t numar_noduri)
 			if(v[i]->right2==v[j])
 				v[i]->nod->bottom_left=j;
 		}
-		//printf("V[%d]: top_left=%d, top_right=%d, bottom_right=%d, bottom_left=%d\n",i,v[i]->nod->top_left,v[i]->nod->top_right,v[i]->nod->bottom_right,v[i]->nod->bottom_left);
 	}
 	QuadtreeNode *vector=malloc(numar_noduri*sizeof(QuadtreeNode));
 	for(i=0;i<numar_noduri;i++)
@@ -503,7 +217,7 @@ arbore **bfs(arbore *root, list *head, uint32_t numar_noduri)
 	}
 	free(v);
 	return vector;
-}*/
+}
 
 arbore *ceva(pixel **a, int l, int r, int u, int d)
 {
@@ -522,12 +236,8 @@ arbore *ceva(pixel **a, int l, int r, int u, int d)
 	new->nod->bottom_right=-1;
 	new->nod->top_left=-1;
 	new->nod->top_right=-1;
-	//printf("Pasul: %d\n",debug++);
 	if(isUniform(a,l,r,u,d))
 	{
-		//printf("hey\n");
-		//new->nod=malloc(sizeof(QuadtreeNode));
-		//printf("terminal node\n");
 		new->nod->blue=a[u][l].blue;
 		new->nod->green=a[u][l].green;
 		new->nod->red=a[u][l].red;
@@ -545,16 +255,9 @@ arbore *ceva(pixel **a, int l, int r, int u, int d)
 	else
 	{
 		new->left1=ceva(a,l,(l+r)/2,u,(u+d)/2);
-		//printf("left1 assigned\n");
-		//new->left2=ceva(a,(l+r)/2+1,r,u,(u+d)/2);
 		new->left2=ceva(a,(l+r)/2,r,u,(u+d)/2);
-		//printf("left2 assigned\n");
-		//new->right1=ceva(a,(l+r)/2+1,r,(u+d)/2+1,d);
 		new->right1=ceva(a,(l+r)/2,r,(u+d)/2,d);
-		//printf("right1 assigned\n");
-		//new->right2=ceva(a,l,(l+r)/2,(u+d)/2+1,d);
 		new->right2=ceva(a,l,(l+r)/2,(u+d)/2,d);
-		//printf("right2 assigned\n");
 		return new;
 	}
 }
@@ -567,7 +270,6 @@ arbore *task2(QuadtreeNode *v, int32_t k)
 	new->right1=NULL;
 	new->right2=NULL;
 	new->nod=malloc(sizeof(QuadtreeNode));
-	//printf("%f\n",(unsigned char)v[k].blue);
 	new->nod->blue=v[k].blue;
 	new->nod->green=v[k].green;
 	new->nod->red=v[k].red;
@@ -577,10 +279,6 @@ arbore *task2(QuadtreeNode *v, int32_t k)
 	new->nod->top_left=v[k].top_left;
 	new->nod->top_right=v[k].top_right;
 	new->nod->bottom_right=v[k].bottom_right;
-	//printf("Vector[%d]: bottom_left=%d, top_left=%d, top_right=%d, bottom_right=%d\n",k,v[k].bottom_left,v[k].top_left,v[k].top_right,v[k].bottom_right);
-	//printf("Vector[%d]: bottom_left=%d, top_left=%d, top_right=%d, bottom_right=%d\n",k,(int32_t)v[k].bottom_left,(int32_t)v[k].top_left,(int32_t)v[k].top_right,(int32_t)v[k].bottom_right);
-	//printf("Vector[%d]: bottom_left=%d, top_left=%d, top_right=%d, bottom_right=%d\n",2,v[2].bottom_left,v[2].top_left,v[2].top_right,v[2].bottom_right);
-	//printf("Vector[%d]: bottom_left=%d, top_left=%d, top_right=%d, bottom_right=%d\n",1,v[1].bottom_left,v[1].top_left,v[1].top_right,v[1].bottom_right);
 
 	if(v[k].bottom_right==-1 || v[k].bottom_left==-1 || v[k].top_right==-1 || v[k].top_left==-1)
 		return new;
@@ -606,7 +304,6 @@ void task2Matr(arbore *head, pixel **a, int l, int r, int u, int d)
 				a[i][j].green=head->nod->green;
 				a[i][j].red=head->nod->red;
 				a[i][j].reserved=head->nod->reserved;
-				//printf("%c %c %c %c\n",a[i][j].blue, a[i][j].green, a[i][j].red, a[i][j].reserved);
 			}
 		free(head->nod);
 		free(head);
@@ -615,11 +312,8 @@ void task2Matr(arbore *head, pixel **a, int l, int r, int u, int d)
 	else
 	{
 		task2Matr(head->left1, a, l, (l+r)/2, u, (u+d)/2);
-		//task2Matr(head->left2, a, (l+r)/2+1, r, u, (u+d)/2);
 		task2Matr(head->left2, a, (l+r)/2, r, u, (u+d)/2);
-		//task2Matr(head->right1, a, (l+r)/2+1, r, (u+d)/2+1, d);
 		task2Matr(head->right1, a, (l+r)/2, r, (u+d)/2, d);
-		//task2Matr(head->right2, a, l, (l+r)/2, (u+d)/2+1, d);
 		task2Matr(head->right2, a, l, (l+r)/2, (u+d)/2, d);
 		return;
 	}
@@ -673,7 +367,6 @@ int main(int argc, char *argv[])
 	if(strcmp(argv[1],"-c")==0)
 	{
 		//----------------Citire Matrice----------------------------------------
-		//printf("Citire Headere PASSED\n");
 		int i,j;
 		pixel **a=malloc((info_header->height)*sizeof(pixel*));
 		for(i=info_header->height-1;i>=0;i--)
@@ -684,28 +377,18 @@ int main(int argc, char *argv[])
 				fread(&a[i][j], sizeof(pixel), 1, file);
 			}
 		}
-		//printf("Citire Matrice PASSED\n");
-		//printf("Closed input file\n");
 
 		uint32_t numar_culori, numar_noduri;
 		arbore *head;
-		//printf("W:%d H:%d\n",info_header->width,info_header->height);
-		//printf("Beggining \"ceva\"\n");
 		head=ceva(a, 0, info_header->width, 0, info_header->height);
-		//head=makeTree(a, 0, info_header->width, 0, info_header->height);
-		//printf("Ending \"ceva\"\n");
 		numar_culori=countFrunze(head);
 		numar_noduri=countNoduri(head);
 
 
-//************************************TESTING***********************************
-
-		//printf("Numar_culori=%d, Numar_noduri=%d\n",numar_culori,numar_noduri);
-
 		list *lista;
 		initL(&lista);
 		arbore **v=bfs(head, lista, numar_noduri);
-		//QuadtreeNode *vector=indexing(v, numar_noduri);
+		QuadtreeNode *vector=indexing(v, numar_noduri);
 
 
 		fwrite(&numar_culori, sizeof(uint32_t), 1, out);
@@ -713,27 +396,19 @@ int main(int argc, char *argv[])
 		uint32_t k;
 		for(k=0;k<numar_noduri;k++)
 		{
-			//printf("Vector[%d]: bottom_left=%d, top_left=%d, top_right=%d, bottom_right=%d\n",k,vector[k].bottom_left,vector[k].top_left,vector[k].top_right,vector[k].bottom_right);
-			fwrite(v[k]->nod, sizeof(QuadtreeNode), 1, out);
-			//free(vector[k]);
-			free(v[k]);
+			fwrite(&vector[k], sizeof(QuadtreeNode), 1, out);
 		}
-		free(v);
 
-		//free(vector);
+		free(vector);
 		freeL(&lista);
-		//debug=0;
-		//printf("PAss\n");
-		//freeArbore(&head);
-		//printf("PAss\n");
 		for(i=info_header->height-1;i>=0;i--)
 		{
 			free(a[i]);
 		}
 		free(a);
-//********************END TESTING***********************************************
 
 	}
+
 	if(strcmp(argv[1],"-d")==0)
 	{
 		uint32_t numar_noduri, numar_culori, k;
@@ -743,7 +418,6 @@ int main(int argc, char *argv[])
 		for(k=0;k<numar_noduri;k++)
 		{
 			fread(&vector[k], sizeof(QuadtreeNode), 1, file);
-			//printf("Vector[%d]: bottom_left=%d, top_left=%d, top_right=%d, bottom_right=%d\n",k,vector[k].bottom_left,vector[k].top_left,vector[k].top_right,vector[k].bottom_right);
 		}
 		arbore *head;
 		head=task2(vector, 0);
@@ -759,7 +433,6 @@ int main(int argc, char *argv[])
 		{
 			for(j=0;j<info_header->width;j++)
 			{
-				//printf("i:%d j:%d | %d %d %d %d | %c %c %c %c\n",i,j,a[i][j].blue,a[i][j].green,a[i][j].red,a[i][j].reserved,a[i][j].blue,a[i][j].green,a[i][j].red,a[i][j].reserved);
 				fwrite(&a[i][j], sizeof(pixel), 1, out);
 			}
 		}
@@ -769,7 +442,6 @@ int main(int argc, char *argv[])
 			free(a[i]);
 		}
 		free(a);
-		//freeArbore(&head);
 	}
 	free(file_header);
 	free(info_header);

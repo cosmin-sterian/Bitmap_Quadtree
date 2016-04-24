@@ -1,0 +1,9 @@
+Image processing software for bitmap images using quadtrees in C.
+
+Functions:
+	-c (Compress)
+	-d (Decompress)
+	-r n (Rotate n times by 90 degrees)
+	
+Usage:
+	./quadtree [-c | -d | -r n] [input_file] [output_file]
