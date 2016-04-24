@@ -368,27 +368,92 @@ arbore **bfs(arbore *root, list *head, uint32_t numar_noduri)
 {
 	arbore *aux;
 	arbore **v=malloc(numar_noduri*sizeof(arbore*));
-	int i=0;
+	int i=0,k=1;
 	insertL(&head,root);
+	list *last=head;
+	list *new;
 	while(head)
 	{
 		aux=pop(&head);
+		k--;
 		//printf("%d ",aux2->val);
 		//v[i].nod=malloc(sizeof(QuadtreeNode));
 		v[i++]=aux;
+		if(v[i-1]->left1!=NULL)
+		{
+			v[i-1]->nod->top_left=i-1+k+1;
+			v[i-1]->nod->top_right=i-1+k+2;
+			v[i-1]->nod->bottom_right=i-1+k+3;
+			v[i-1]->nod->bottom_left=i-1+k+4;
+		}
 	        if(aux->left1!=NULL)
-	        insertL(&head, aux->left1);
+	        {
+			//insertL(&head, aux->left1);
+			new=malloc(sizeof(list));
+			new->next=NULL;
+			new->val=aux->left1;
+			if(head==NULL)
+			{
+				head=new;
+			}
+			else
+				last->next=new;
+			last=new;
+			k++;
+		}
 		if(aux->left2!=NULL)
-	        insertL(&head, aux->left2);
+	        {
+			//insertL(&head, aux->left2);
+			new=malloc(sizeof(list));
+			new->next=NULL;
+			new->val=aux->left2;
+			if(head==NULL)
+			{
+				head=new;
+			}
+			else
+				last->next=new;
+			last=new;
+			k++;
+		}
 	        if(aux->right1!=NULL)
-	        insertL(&head, aux->right1);
+	        {
+			//insertL(&head, aux->right1);
+			new=malloc(sizeof(list));
+			new->next=NULL;
+			new->val=aux->right1;
+			if(head==NULL)
+			{
+				head=new;
+			}
+			else
+				last->next=new;
+			last=new;
+			k++;
+		}
 		if(aux->right2!=NULL)
-	        insertL(&head, aux->right2);
+	        {
+			//insertL(&head, aux->right2);
+			new=malloc(sizeof(list));
+			new->next=NULL;
+			new->val=aux->right2;
+			if(head==NULL)
+			{
+				head=new;
+			}
+			else
+				last->next=new;
+			last=new;
+			k++;
+		}
+
 	        //free(aux2);
 		//free(aux);
 	        //aux=NULL;
 	}
 	freeL(&head);
+	new=NULL;
+	last=NULL;
 	return v;
 }
 
@@ -403,9 +468,9 @@ arbore **bfs(arbore *root, list *head, uint32_t numar_noduri)
 		return 0;
 }*/
 
-QuadtreeNode *indexing(arbore **v, uint32_t numar_noduri)
+/*QuadtreeNode *indexing(arbore **v, uint32_t numar_noduri)
 {
-	uint32_t i,j;
+	uint32_t i;
 	for(i=0;i<numar_noduri-1;i++)
 	{
 		for(j=i+1;j<numar_noduri;j++)
@@ -438,7 +503,7 @@ QuadtreeNode *indexing(arbore **v, uint32_t numar_noduri)
 	}
 	free(v);
 	return vector;
-}
+}*/
 
 arbore *ceva(pixel **a, int l, int r, int u, int d)
 {
@@ -640,7 +705,7 @@ int main(int argc, char *argv[])
 		list *lista;
 		initL(&lista);
 		arbore **v=bfs(head, lista, numar_noduri);
-		QuadtreeNode *vector=indexing(v, numar_noduri);
+		//QuadtreeNode *vector=indexing(v, numar_noduri);
 
 
 		fwrite(&numar_culori, sizeof(uint32_t), 1, out);
@@ -649,11 +714,13 @@ int main(int argc, char *argv[])
 		for(k=0;k<numar_noduri;k++)
 		{
 			//printf("Vector[%d]: bottom_left=%d, top_left=%d, top_right=%d, bottom_right=%d\n",k,vector[k].bottom_left,vector[k].top_left,vector[k].top_right,vector[k].bottom_right);
-			fwrite(&vector[k], sizeof(QuadtreeNode), 1, out);
+			fwrite(v[k]->nod, sizeof(QuadtreeNode), 1, out);
 			//free(vector[k]);
+			free(v[k]);
 		}
+		free(v);
 
-		free(vector);
+		//free(vector);
 		freeL(&lista);
 		//debug=0;
 		//printf("PAss\n");
